@@ -6,6 +6,7 @@ Plot the live microphone signal(s) with matplotlib.
 Matplotlib and NumPy have to be installed.
 
 """
+
 import argparse
 import queue
 import sys
@@ -102,8 +103,8 @@ try:
     ax.axis((0, len(plotdata), -1, 1))
     ax.set_yticks([0])
     ax.yaxis.grid(True)
-    ax.tick_params(bottom='off', top='off', labelbottom='off',
-                   right='off', left='off', labelleft='off')
+    #ax.tick_params(bottom='off', top='off', labelbottom='off',
+    #               right='off', left='off', labelleft='off')
     fig.tight_layout(pad=0)
 
     stream = sd.InputStream(

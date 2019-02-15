@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import random
+import ctypes
+
+cfft = ctypes.CDLL('fft.so')
+
+class c_Complex(ctypes.Structure):
+    _fields_ = [("real", ctypes.c_double),("imaginary", ctypes.c_double)]
 
 def read_csv(data_file):
     axes_labels = []
@@ -26,8 +32,8 @@ def write_csv(data_file, labels, xs, ys):
             f.write('%f\t%f\n' % (x,ys[i]))
 
 def generate_random_data(filename):
-    xs = np.linspace(0.0, 5.0, num=10000)
-    ys = np.sin(7 * 2 * np.pi * xs) + np.sin(23 * 2 * np.pi * xs) + 3*np.sin(15 * 2 * np.pi * xs)
+    xs = np.linspace(0.0, 5.0, num=512)
+    ys = np.sin(7 * 2 * np.pi * xs) + np.sin(30 * 2 * np.pi * xs) + 3*np.sin(15 * 2 * np.pi * xs)
     for i,y in enumerate(ys):
         #pass
         ys[i] = y+random.random()*4-2
@@ -45,24 +51,6 @@ def generate_plot(data_file, output_file, title='Signal Data'):
 
         fig.savefig(output_file, dpi=200)
         plt.show()
-
-'''def fourier_transform(data_file, transform_data_file, bins=None):
-    labels, xs, ys = read_csv(data_file)
-
-    if bins is None:
-        bins = len(xs)
-
-    #ks = np.linspace(0,len(xs)/(2*(xs[-1]-xs[0])), num=bins)
-    ks = np.linspace(0,len(xs)/((xs[-1]-xs[0])), num=bins)
-    transformed_ys = []
-
-    for k in ks:
-        sum = 0
-        for n,y in enumerate(ys):
-            sum += y*complex(np.cos(2*np.pi*k*xs[n]),-np.sin(2*np.pi*k*xs[n]))
-        transformed_ys.append(abs(sum)*(xs[1]-xs[0]))
-
-    write_csv(transform_data_file, ['Frequency', 'Power'], ks, transformed_ys)'''
 
 def fourier_transform(data_file, transform_data_file, bins=None):
     labels, xs, ys = read_csv(data_file)
@@ -82,19 +70,7 @@ def fourier_transform(data_file, transform_data_file, bins=None):
     print(transform_data_file)
     write_csv(transform_data_file, ['Frequency', 'Power'], np.linspace(0,len(xs)/((xs[-1]-xs[0])), num=bins), transformed_ys)
 
-def fft(ys, bins):
-    if len(ys) == 1:
-        return fft_slow(ys, bins)
-    else:
-        output = []
-        if len(bins) % 2 == 0:
-            evens = fft(ys[::2], bins/2)
-            odds = fft(ys[1::2], bins/2)
-            for k in range(bins):
-                if k < bins/2:
-                    output.append(evens[k]%(bins/2)+)
-
-def fft_slow(ys, bins):
+def dft(ys, bins):
     output = []
     for k in range(bins):
         sum = 0
@@ -103,6 +79,27 @@ def fft_slow(ys, bins):
         output.append(sum)
 
     return output
+
+def fft(ys):
+    input = (c_Complex * len(ys))()
+    for i,y in enumerate(ys):
+        input[i].real = y.real
+        input[i].imaginary = y.imag
+
+    output = (c_Complex * len(ys))()
+    cfft.fft(input, len(ys), output)
+
+    python_output = []
+    for i,row in enumerate(output):
+        python_output.append(complex(row.real, row.imaginary))
+
+    return np.array(python_output)
+
+def custom_transform(data_file, transform_data_file):
+    labels, xs, ys = read_csv(data_file)
+    transformed_ys = abs(fft(ys))
+    write_csv(transform_data_file, ['Frequency', 'Power'], np.linspace(0,len(xs)/((xs[-1]-xs[0])), num=len(transformed_ys)), transformed_ys)
+
 
 def nptransform(data_file, transform_data_file):
     labels, xs, ys = read_csv(data_file)
@@ -118,10 +115,13 @@ if __name__ == '__main__':
         transform_data_file = sys.argv[3]
         transform_image_file = sys.argv[4]
 
-        #generate_random_data(data_file)
-        #generate_plot(data_file, image_file)
-        #nptransform(data_file, transform_data_file)
-        #generate_plot(transform_data_file, transform_image_file, title='Fourier Transformed Data (NP)')
-        #fourier_transform(data_file, transform_data_file, 100)
-        #generate_plot(transform_data_file, transform_image_file, title='Fourier Transformed Data (Program)')
-        print(fft_slow([1, 2-1j, -1j, -1+2j], 4))
+
+        ##print(output)
+        generate_random_data(data_file)
+        generate_plot(data_file, image_file)
+        nptransform(data_file, transform_data_file)
+        generate_plot(transform_data_file, transform_image_file, title='Fourier Transformed Data (NP)')
+        custom_transform(data_file, transform_data_file)
+        generate_plot(transform_data_file, transform_image_file, title='Fourier Transformed Data (Custom)')
+
+        #print(np.fft.fft([1, 2, 3+1j, 1+1j, 2+2j, 5+2j, 6+1j, -1j]))
