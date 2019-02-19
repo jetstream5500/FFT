@@ -44,10 +44,6 @@ void print_complex(struct Complex c) {
   printf("%f+%fj\n", c.real, c.imaginary);
 }
 
-void test(int a) {
-  int a = 5;
-}
-
 // Only works on powers of 2
 void fft(struct Complex a[], int length, struct Complex transforms[]) {
   // bit reverse

@@ -52,7 +52,7 @@ def custom_transform(data_file, transform_data_file):
     transformed_ys = abs(r2fft.fft(ys))
     write_csv(transform_data_file, ['Frequency', 'Power'], np.linspace(0,len(xs)/((xs[-1]-xs[0])), num=len(transformed_ys)), transformed_ys)
 
-def nptransform(data_file, transform_data_file):
+def np_transform(data_file, transform_data_file):
     labels, xs, ys = read_csv(data_file)
     transformed_ys = abs(np.fft.fft(ys))
     write_csv(transform_data_file, ['Frequency', 'Power'], np.linspace(0,len(xs)/((xs[-1]-xs[0])), num=len(transformed_ys)), transformed_ys)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         ##print(output)
         generate_random_data(data_file)
         generate_plot(data_file, image_file)
-        nptransform(data_file, transform_data_file)
+        np_transform(data_file, transform_data_file)
         generate_plot(transform_data_file, transform_image_file, title='Fourier Transformed Data (NP)')
         custom_transform(data_file, transform_data_file)
         generate_plot(transform_data_file, transform_image_file, title='Fourier Transformed Data (Custom)')
