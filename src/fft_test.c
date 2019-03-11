@@ -44,7 +44,7 @@ void test_wikipedia_example() {
 int main(int argc, char *argv[]) {
   test_wikipedia_example();
 
-  for (int i = 2; i<=1048576; i*=2) {
+  for (int i = 8192; i<=33554432; i*=4) {
     //printf("%d\n", i);
     struct Complex *a = malloc(sizeof(struct Complex)*i);
 

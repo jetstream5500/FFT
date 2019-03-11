@@ -27,7 +27,7 @@ def write_csv(data_file, labels, xs, ys):
             f.write('%f\t%f\n' % (x,ys[i]))
 
 def generate_random_data(filename):
-    xs = np.linspace(0.0, 5.0, num=1024)
+    xs = np.linspace(0.0, 5.0, num=4096)
     ys = np.sin(7 * 2 * np.pi * xs) + np.sin(30 * 2 * np.pi * xs) + 3*np.sin(15 * 2 * np.pi * xs)
     for i,y in enumerate(ys):
         #pass

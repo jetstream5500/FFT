@@ -48,14 +48,17 @@ if any(c < 1 for c in args.channels):
     parser.error('argument CHANNEL: must be >= 1')
 mapping = [c - 1 for c in args.channels]  # Channel numbers start with 1
 q = queue.Queue()
+#print(mapping)
 
 
 def audio_callback(indata, frames, time, status):
+    #print(indata)
     """This is called (from a separate thread) for each audio block."""
     if status:
         print(status, file=sys.stderr)
     # Fancy indexing with mapping creates a (necessary!) copy:
     q.put(indata[::args.downsample, mapping])
+
 
 
 def update_plot(frame):
@@ -110,6 +113,7 @@ try:
     stream = sd.InputStream(
         device=args.device, channels=max(args.channels),
         samplerate=args.samplerate, callback=audio_callback)
+    #print(max(args.channels))
     ani = FuncAnimation(fig, update_plot, interval=args.interval, blit=True)
     with stream:
         plt.show()

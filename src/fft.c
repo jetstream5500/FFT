@@ -49,10 +49,18 @@ void dft(struct Complex a[], int length) {
   free(transforms);
 }
 
+/*void transpose(int rows, int cols, struct Complex a[rows][cols]) {
+
+}
+
+void fft2(int rows, int cols, struct Complex a[rows][cols]) {
+
+}*/
 
 // Only works on powers of 2
 void fft(struct Complex a[], int length) {
   // bit reverse
+  #pragma omp parallel for
   for (int i = 0; i<length; i++) {
     int swap_index = bit_reverse(i, length);
     if (swap_index < i) {
@@ -65,6 +73,7 @@ void fft(struct Complex a[], int length) {
   // fft
   // Compute w_ns that will be used throughout
   struct Complex *w_ns = malloc(sizeof(struct Complex)*length);
+  #pragma omp parallel for
   for (int k = 0; k<length; k++) {
     w_ns[k].real = cos(2*M_PI*k/length);
     w_ns[k].imaginary = -sin(2*M_PI*k/length);

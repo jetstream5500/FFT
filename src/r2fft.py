@@ -6,18 +6,34 @@ cfft = ctypes.CDLL('fft.so')
 class c_Complex(ctypes.Structure):
     _fields_ = [("real", ctypes.c_double),("imaginary", ctypes.c_double)]
 
-def dft(ys, bins=None):
-    if bins is None:
-        bins = len(ys)
+def fft2(a):
+    for i, row in enumerate(a):
+        new_row = fft(row)
+        for j,e in enumerate(new_row):
+            a[i][j] = e
 
-    output = []
-    for k in range(bins):
-        sum = 0
-        for n,y in enumerate(ys):
-            sum += y*complex(np.cos(2*np.pi*k*n/bins),-np.sin(2*np.pi*k*n/bins))
-        output.append(sum)
+    a = a.transpose()
 
-    return output
+    for i, row in enumerate(a):
+        new_row = fft(row)
+        for j,e in enumerate(new_row):
+            a[i][j] = e
+
+    a = a.transpose()
+
+def dft(ys):
+    input = (c_Complex * len(ys))()
+    for i,y in enumerate(ys):
+        input[i].real = y.real
+        input[i].imaginary = y.imag
+
+    cfft.dft(input, len(ys))
+
+    python_output = []
+    for i,row in enumerate(input):
+        python_output.append(complex(row.real, row.imaginary))
+
+    return np.array(python_output)
 
 # Pads the input so it is a power of 2
 def fft(ys):
@@ -37,14 +53,13 @@ def fft(ys):
     for i in range(len(ys),new_length):
         input[i].real = 0
         input[i].imaginary = 0
-    output = (c_Complex * new_length)()
 
     # Execute c function
-    cfft.fft(input, new_length, output)
+    cfft.fft(input, new_length)
 
     #for row in output:
     python_output = []
-    for i,row in enumerate(output):
+    for i,row in enumerate(input):
         python_output.append(complex(row.real, row.imaginary))
 
     return np.array(python_output)
