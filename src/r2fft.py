@@ -36,11 +36,15 @@ def dft(ys):
     return np.array(python_output)
 
 # Pads the input so it is a power of 2
-def fft(ys):
+def fft(ys, min_size=None):
+    size = len(ys)
+    if min_size is not None:
+        size = min_size
+
     #pads with 0s
     upper = 1
     count = 0
-    while upper < len(ys):
+    while upper < size:
         count+=1
         upper*=2
     new_length = pow(2, count)
